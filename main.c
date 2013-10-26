@@ -6,6 +6,7 @@
  */
 #include "usart.h"
 #include <util/delay.h>
+#include <avr/interrupt.h>
 #define F_CPU 8000000 UL
 
 #define up 1
@@ -47,7 +48,7 @@ void turn_left()
 
 void turn_left_corner()
 {
-	printf("w lewo! korner");
+	//printf("w lewo! korner");
 	PORTD = 0x40;
 	PORTB = 0x80;
 }
@@ -76,10 +77,48 @@ void button_C_pressed()
 	//printf("C\n!");
 }
 
+
+int i = 0;
+int rx_complete = 0;
+char buffer[16];
+
+ISR(USART_RXC_vect)
+{
+	//char temp = UDR;
+	//printf("%d", i);
+	buffer[i] = UDR;
+	i++;
+
+	if (i == 16)
+	{
+		//printf("all\n");
+		rx_complete = 1;
+		i = 0;
+	}
+	//printf("%c-", temp);
+
+}
+
+unsigned char ConvertTwoCharsToByte(char Hchar, char Lchar)
+{
+	char temp_Hchar, temp_Lchar, result;
+	if (Hchar >= 'A' && Hchar <= 'F') temp_Hchar=Hchar-'A'+0xA;
+	if (Hchar >= 'a' && Hchar <= 'f') temp_Hchar=Hchar-'a'+0xA;
+	if (Hchar >= '0' && Hchar <= '9') temp_Hchar=Hchar-'0';
+
+	if (Lchar >= 'A' && Lchar <= 'F') temp_Lchar=Lchar-'A'+0xA;
+	if (Lchar >= 'a' && Lchar <= 'f') temp_Lchar=Lchar-'a'+0xA;
+	if (Lchar >= '0' && Lchar <= '9') temp_Lchar=Lchar-'0';
+
+	result = temp_Hchar * 16 + temp_Lchar;
+
+	return result;
+}
+
 int main()
 {
-	int buttons[8];
-	USART_init(9600,1,1,0,0);
+	int buttons[15];
+	USART_init(19200,1,1,1,0);
 	USART_stdout_redirect();
 	DDRC = 0x00;
 
@@ -88,38 +127,32 @@ int main()
 	DDRB = 0xC0;
 	PORTD = 0x0;
 	PORTB = 0x0;
+	sei();
 
  for(;;)
  {
-	 /*_delay_ms(100);
-	 portc_high = PINC & 0x3F;
-	 printf("%c",portc_high);*/
-	 _delay_ms(100);
-	 /*
-	 if ((PINC | ~up) == ~up) go_forward();
-	 else
+	 int x;
+	 if (rx_complete != 0)
 	 {
-		 if ((PINC | ~down) == ~down) go_backward();
-		 else
+		 rx_complete = 0;
+		 //printf("gotit\n");
+		 /*for(x=0;x<16;x++)
 		 {
-			 if ((PINC | ~left) == ~left) turn_left();
-			 else
-			 {
-				 if ((PINC | ~right) == ~right) turn_right();
-				 else
-				 			 {
-				 				 if ((PINC | ~(button_B & left)) == ~(button_B & left)) turn_left_corner;
-				 				 else
-				 								 			 {
-				 								 				 if ((PINC | ~button_C) == ~button_C) button_C_pressed();
-				 								 				 else stop();
-				 								 			 }
-				 			 }
+			 printf("%c", buffer[x]);
+		 }*/
+		 /*for (x=0;x<16;x+=2)
+		 {
+			 printf("%x", ConvertTwoCharsToByte(buffer[x], buffer[x+1]));
+		 }*/
+		 /*for(x=0;x<7;x++)
+		 {
+			buttons[x] = ConvertTwoCharsToByte(buffer[2*x], buffer[2*x+1]);
+			printf("%d ", buttons[x]);
+		 }*/
+	 }
+	 //printf("-");
 
-
-			 }
-		 }
-		 */
+	 //SEGA pad button check-----------------------------------------------------------
 	 if ((PINC | ~up) == ~up) buttons[0]=1;
 	 else buttons[0]=0;
 
@@ -134,25 +167,26 @@ int main()
 
 	 if ((PINC | ~button_B) == ~button_B) buttons[4]=1;
 	 else buttons[4]=0;
+	 //--------------------------------------------------------------------------------
 
-	 if (buttons[0]==1) go_forward();
+	 if (buttons[0]!=0) go_forward();
 	 //else stop();
-	 if (buttons[1]==1) go_backward();
+	 if (buttons[1]!=0) go_backward();
 	// else stop();
-	 if (buttons[2]==1)
+	 if (buttons[2]!=0)
 		 {
-		 if (buttons[4]==1) turn_left_corner();
+		 if (buttons[4]!=0) turn_left_corner();
 		 else turn_left();
 		 }
 	 //else stop();
-	 if (buttons[3]==1)
+	 if (buttons[3]!=0)
 	 {
-	 	if (buttons[4]==1) turn_right_corner();
+	 	if (buttons[4]!=0) turn_right_corner();
 	 	else turn_right();
 	 }
 	 //else stop();
 
-	 if (buttons[0]==0 & buttons[1]==0 & buttons[2]==0 & buttons[3]==0) stop();
+	 if (buttons[0]==0 && buttons[1]==0 && buttons[2]==0 && buttons[3]==0) stop();
 
 
 
