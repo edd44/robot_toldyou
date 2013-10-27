@@ -170,23 +170,28 @@ int main()
 	 //--------------------------------------------------------------------------------
 
 	 if (buttons[0]!=0) go_forward();
-	 //else stop();
-	 if (buttons[1]!=0) go_backward();
-	// else stop();
-	 if (buttons[2]!=0)
-		 {
-		 if (buttons[4]!=0) turn_left_corner();
-		 else turn_left();
-		 }
-	 //else stop();
-	 if (buttons[3]!=0)
+	 else
 	 {
-	 	if (buttons[4]!=0) turn_right_corner();
-	 	else turn_right();
+		 if (buttons[1]!=0) go_backward();
+		 else
+		 {
+			 if (buttons[2]!=0)
+				 {
+				 if (buttons[4]!=0) turn_left_corner();
+				 else turn_left();
+				 }
+			 else
+			 {
+				 if (buttons[3]!=0)
+				 {
+					if (buttons[4]!=0) turn_right_corner();
+					else turn_right();
+				 }
+				 else stop();
+			 }
+		 }
 	 }
-	 //else stop();
-
-	 if (buttons[0]==0 && buttons[1]==0 && buttons[2]==0 && buttons[3]==0) stop();
+	 //if (buttons[0]==0 && buttons[1]==0 && buttons[2]==0 && buttons[3]==0) stop();
 
 
 
