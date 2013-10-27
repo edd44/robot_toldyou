@@ -7,7 +7,7 @@
 #include "usart.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
-#define F_CPU 8000000 UL
+//#define F_CPU 8000000 UL
 
 #define up 1
 #define down 2
@@ -101,7 +101,7 @@ ISR(USART_RXC_vect)
 
 unsigned char ConvertTwoCharsToByte(char Hchar, char Lchar)
 {
-	char temp_Hchar, temp_Lchar, result;
+	char temp_Hchar =0, temp_Lchar =0, result;
 	if (Hchar >= 'A' && Hchar <= 'F') temp_Hchar=Hchar-'A'+0xA;
 	if (Hchar >= 'a' && Hchar <= 'f') temp_Hchar=Hchar-'a'+0xA;
 	if (Hchar >= '0' && Hchar <= '9') temp_Hchar=Hchar-'0';
@@ -144,16 +144,16 @@ int main()
 		 {
 			 printf("%x", ConvertTwoCharsToByte(buffer[x], buffer[x+1]));
 		 }*/
-		 /*for(x=0;x<7;x++)
+		 for(x=0;x<7;x++)
 		 {
 			buttons[x] = ConvertTwoCharsToByte(buffer[2*x], buffer[2*x+1]);
 			printf("%d ", buttons[x]);
-		 }*/
+		 }
 	 }
 	 //printf("-");
 
 	 //SEGA pad button check-----------------------------------------------------------
-	 if ((PINC | ~up) == ~up) buttons[0]=1;
+	 /*if ((PINC | ~up) == ~up) buttons[0]=1;
 	 else buttons[0]=0;
 
 	 if ((PINC | ~down) == ~down) buttons[1]=1;
@@ -166,7 +166,7 @@ int main()
 	 else buttons[3]=0;
 
 	 if ((PINC | ~button_B) == ~button_B) buttons[4]=1;
-	 else buttons[4]=0;
+	 else buttons[4]=0;*/
 	 //--------------------------------------------------------------------------------
 
 	 if (buttons[0]!=0) go_forward();
